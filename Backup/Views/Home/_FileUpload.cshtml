@@ -1,0 +1,205 @@
+﻿@using HtmlHelpers.BeginCollectionItem;
+@using MultiFileAttach.Helpers;
+@model MultiFileAttach.Models.Shared._FileUploadViewModel
+
+<div class="editorRow">
+    <div>
+        @using (Html.BeginCollectionItem("HttpFileUploadViews"))
+        {
+            if (!Model.InUpdateMode)
+            {
+            <span class="btn btn-primary fileinput-button">
+            <span>Add file...</span>
+                @Html.TextBoxFor(m => ((HttpFileUploadView)m.FileUploadView).HttpFileUpload, new { @class = "filectrl uctrl", type = "file", accept = "image/*,application/pdf,application/zip,text/plain,application/vnd.ms-excel,application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document" })
+            </span>
+            <label style="width:320px;  display: inline-block;" class="upload-label"></label>
+            <input type="button" value="Upload" id="@Html.ViewData.TemplateInfo.HtmlFieldPrefix.Replace("[", "-").Replace("]", "")" class="button btn btn-primary upp" style="margin-bottom:4.5px;display: none;"/>
+            <img src="@Url.Content("~/Content/Images/progressbar.gif")" class="img" style="display: none;"/>
+            <span></span>
+                Model.UploadId = Html.ViewData.TemplateInfo.HtmlFieldPrefix.Replace("[", "-").Replace("]", "");
+            if (Model.FileUploadView != null)
+            {
+                @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).sId, new { Value = Model.FileUploadView.sId })
+            }
+            else
+            {
+                @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).sId)
+            }
+            }
+            else
+            {
+            <span class="btn btn-primary fileinput-button" style="display: none;">
+                <span>Add file...</span>
+                @Html.TextBoxFor(m => ((HttpFileUploadView)m.FileUploadView).HttpFileUpload, new { @class = "uctrl", type = "file", accept = "image/*,application/pdf,application/zip,text/plain,application/vnd.ms-excel,application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document", style = "display: none;" })
+            </span>
+            <label style="width: 320px; display: inline-block;" class="upload-label">@Html.DisplayFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileName)</label>
+            <input type="button" value="Upload" class="button btn btn-primary " style="margin-bottom: 4.5px; display: none;" />
+            <img src="@Url.Content("~/Content/Images/progressbar.gif")" class="img" style="display: none;"/>
+            <span></span>
+                Model.UploadId = Html.ViewData.TemplateInfo.HtmlFieldPrefix.Replace("[", "-").Replace("]", "");
+            if (Model.FileUploadView != null)
+            {
+                @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).sId, new { Value = Model.FileUploadView.sId })
+            }
+            else
+            {
+                @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).sId)
+            }
+            }
+            <span>
+                @if (Model.FileUploadView != null)
+                {
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileName, new { Value = Model.FileUploadView.AttachedFileName })
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileType, new { Value = Model.FileUploadView.AttachedFileType })
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileSize, new { Value = Model.FileUploadView.AttachedFileSize })
+                }
+                else
+                {
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileName)
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileType)
+                    @Html.HiddenFor(m => ((HttpFileUploadView)m.FileUploadView).AttachedFileSize)
+                }
+
+
+            </span>
+
+        }
+        @if (!Model.InUpdateMode)
+        {
+        <a href="#" class=" deleteRow btn btn-danger" style="display: none;">remove</a>
+        }
+        else
+        {
+            <a href="#" class=" deleteRow btn btn-danger">remove</a>
+        }
+          
+    </div>
+</div>
+
+    <script>
+
+        function addcontrols() {
+            $.ajax({
+                url: '@Url.Action("GetUpload", "Home")',
+                cache: false,
+                success: function (html) { $("#editorRows").append(html); },
+                error: function (x, t, m) {
+                    if (t === "timeout") {
+                        alert("the operation timeout.  Please try again!");
+                    } else {
+                        if (x.status == "401") {
+                            alert("Your session has ended.  You  are required to login again!  Please always remember to save draft to prevent losing data due to sessions timeouts");
+                            var url = '@Html.Raw(Url.Action("Login", "Account", new { Area = "" }))';
+                            $("#UnsavedChanges").val("0");
+                            window.location.href = url;
+                        } else {
+                            alert(x.status);
+                        }
+                    }
+                }
+            });
+        }
+
+        $("a.deleteRow").click(function () {
+            var ctrlcount = $('.deleteRow').length;
+            if (ctrlcount > 1) {
+                $(this).parents("div.editorRow:first").remove();
+            }
+            return false;
+        });
+
+
+        $("input[type='file']").change(function () {
+
+            if (this.files[0].size > 3 * 1024 * 1024) {
+                alert('This file size is more than the set limit of 3MB');
+            } else {
+                if ($(this).val() != '') {
+                    var label = $(this).parent().next();
+                    label.text($(this).val());
+                    label.next().show();
+                    var removectrl = label.next().next().next().next().next().next();
+                    removectrl.show();
+                    $(this).parent().hide();
+
+                    addcontrols();
+                    return false;
+                }
+            }
+
+
+
+        });
+
+
+        var ctrl;
+        var ctrl1;
+
+        $('#@Model.UploadId').on("click", function () {
+            var elementId = $(this).attr("id");
+            var hiddenCtrl = elementId.replace('-', '_') + '__sId';
+            var hiddenFileNameCtrl = elementId.replace('-', '_') + '__AttachedFileName';
+            var hiddenFileTypeCtrl = elementId.replace('-', '_') + '__AttachedFileType';
+            var hiddenFileSizeCtrl = elementId.replace('-', '_') + '__AttachedFileSize';
+            ctrl1 = $(this).prev();
+
+
+            var idCtrl = 'HttpFileUploadViews_' + $(this).prev().prev().prev().val() + '__HttpFileUpload';
+            ctrl = $("#" + idCtrl);
+
+            
+
+            if (ctrl.val() != '') {
+                $(this).next().show();
+                var data = new FormData();
+
+                var files = ctrl.get(0).files;
+                var guid = $('#UniqueGuidForm').val();
+                if (files.length > 0) {
+                    data.append("UpoadFile", files[0]);
+                    data.append("Guid", guid);
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("PartialFileUpload", "Home")",
+                    contentType: false,
+                    processData: false,
+                    data: data
+                }).done(function (data) {
+                    ctrl.hide();
+                    ctrl = ctrl1;
+                    console.log(ctrl.attr("Id"));
+                    var label = ctrl;
+                    label.text(data._name);
+                    ctrl.next().next().remove();
+                    ctrl.next().remove();
+                    $('#' + hiddenCtrl).val(data._id);
+                    $('#' + hiddenFileNameCtrl).val(data._name);
+                    $('#' + hiddenFileTypeCtrl).val(data._type);
+                    $('#' + hiddenFileTypeCtrl).val(data._length);
+                }).error(function (x, t, m) {
+
+                    if (t === "timeout") {
+                        alert("the operation timeout.  Please try again!");
+                    } else {
+                        if (x.status == "401") {
+                            var url = '@Html.Raw(Url.Action("Index", "Home"))';
+                            $("#UnsavedChanges").val("0");
+                            window.location.href = url;
+                        } else {
+                            alert(x.status);
+                        }
+                    }
+                });
+
+
+            } else {
+                var label = ctrl.prev();
+                label.text('Select a file!');
+            }
+
+            return false;
+        });
+
+    </script>

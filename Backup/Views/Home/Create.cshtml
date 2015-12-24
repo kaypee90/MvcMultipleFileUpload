@@ -1,0 +1,30 @@
+﻿@model MultiFileAttach.Models.ViewpageModels.UploadPageViewModel
+@{
+    ViewBag.Title = "Create";
+    //used css and scripts are in the layout
+}
+
+
+<h2>Create</h2>
+
+
+<hr />
+@using (Html.BeginForm("Create", "Home", FormMethod.Post, new { Id = "FSForm", enctype = "multipart/form-data" })) 
+{
+     <div id="editorRows">
+           
+                                @{    
+                                   //Maximum file upload size is set to 3MB  
+                                    
+                                    Model._FileUploadViewModel.FileUploadView = null;
+                                    //render _FileUpload Partial view
+                                    @Html.Partial("_FileUpload", Model._FileUploadViewModel)
+                                }
+                             
+      </div>
+    <br />
+    <div class="form-control">
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+
+</div>
+}

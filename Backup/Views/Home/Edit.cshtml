@@ -1,0 +1,49 @@
+﻿@model MultiFileAttach.Models.ViewpageModels.UploadPageViewModel
+@{
+    ViewBag.Title = "Edit";
+    //used css and scripts are in the layout
+}
+
+<h2>Edit</h2>
+
+<hr />
+
+@using (Html.BeginForm("Edit", "Home", FormMethod.Post, new { Id = "FSForm", enctype = "multipart/form-data" })) 
+{
+     <div id="editorRows">
+           
+                                @{
+                                    //Maximum file upload size is set to 3MB
+                                    
+                                    if( Model.HttpFileUploadViews != null)
+                                    {
+                                        if (Model.HttpFileUploadViews.Count() > 0)
+                                        {
+                                            foreach (var item in Model.HttpFileUploadViews)
+                                             {
+                                                if (item.AttachedFileName != null ){
+                                                    
+                                                 Model._FileUploadViewModel.FileUploadView = item;
+                                                 @Html.Partial("_FileUpload", Model._FileUploadViewModel)
+                                            }
+                                             }
+                                            if (Model._FileUploadViewModel.InUpdateMode)
+                                            {
+                                                Model._FileUploadViewModel.InUpdateMode = false;
+                                            }
+                                        }
+                                        
+                                    }
+                                    Model._FileUploadViewModel.InUpdateMode = false;
+                                    Model._FileUploadViewModel.FileUploadView = null;
+                                    //render _FileUpload Partial view
+                                    @Html.Partial("_FileUpload", Model._FileUploadViewModel)
+                                }
+                             
+              </div>
+    <br />
+    <div class="form-control">
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+
+</div>
+}
